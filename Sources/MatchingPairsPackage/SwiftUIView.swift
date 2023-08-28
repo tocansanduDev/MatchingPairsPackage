@@ -1,6 +1,6 @@
 //
 //  SwiftUIView.swift
-//  
+//
 //
 //  Created by Sandu Tocan on 27.08.2023.
 //
@@ -13,8 +13,8 @@ public struct TimerView: View {
     private let seconds: Double
     private let onRestartPublisher: PassthroughSubject<Void, Never>
     private let onFinishedInteraction: (() -> Void)
-    
-    @State private var secondsRemaining: Double
+    private let colorScheme: ColorScheme
+    @State private var secondsRemaining: Double = 0
     @State private var timer = Timer.publish (every: 1, on: .current, in: .common).autoconnect()
     private var disposeBag = Set<AnyCancellable>()
     
@@ -23,13 +23,14 @@ public struct TimerView: View {
     }
     
     public init(seconds: Int,
-         onRestartPublisher: PassthroughSubject<Void, Never>,
-         onFinishedInteraction: @escaping (() -> Void)
+                onRestartPublisher: PassthroughSubject<Void, Never>,
+                onFinishedInteraction: @escaping (() -> Void),
+                colorScheme: ColorScheme
     ) {
-        self.secondsRemaining = Double(seconds)
         self.seconds = Double(seconds)
         self.onFinishedInteraction = onFinishedInteraction
         self.onRestartPublisher = onRestartPublisher
+        self.colorScheme = colorScheme
     }
     
     public var body: some View {
@@ -38,7 +39,8 @@ public struct TimerView: View {
             .foregroundColor(Color.gray)
             .overlay {
                 GeometryReader { proxy in
-                    Color.black.frame(maxWidth: proxy.size.width * fraction)
+                    (colorScheme == .dark ? Color.white : Color.black)
+                        .frame(maxWidth: proxy.size.width * fraction)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
@@ -57,6 +59,9 @@ public struct TimerView: View {
                 self.secondsRemaining = Double(seconds)
                 self.timer = Timer.publish(every: 1, on: .current, in: .common).autoconnect()
             }
+            .onAppear {
+                secondsRemaining = seconds
+            }
     }
     
     
@@ -64,7 +69,7 @@ public struct TimerView: View {
 
 struct TimerView_Previews: PreviewProvider {
     static var previews: some View {
-        TimerView(seconds: 10, onRestartPublisher: PassthroughSubject<Void, Never>(), onFinishedInteraction: {})
+        TimerView(seconds: 10, onRestartPublisher: PassthroughSubject<Void, Never>(), onFinishedInteraction: {}, colorScheme: .light)
     }
 }
 
