@@ -8,28 +8,15 @@
 import SwiftUI
 import Combine
 
-public struct TimerView: View {
+public struct InLineProgressView: View {
     
-    private let seconds: Double
-    private let onRestartPublisher: PassthroughSubject<Void, Never>
-    private let onFinishedInteraction: (() -> Void)
+    private let progress: Double
     private let colorScheme: ColorScheme
-    @State private var secondsRemaining: Double = 0
-    @State private var timer = Timer.publish (every: 1, on: .current, in: .common).autoconnect()
-    private var disposeBag = Set<AnyCancellable>()
     
-    var fraction: Double {
-        secondsRemaining / seconds
-    }
-    
-    public init(seconds: Int,
-                onRestartPublisher: PassthroughSubject<Void, Never>,
-                onFinishedInteraction: @escaping (() -> Void),
+    public init(progress: Double,
                 colorScheme: ColorScheme
     ) {
-        self.seconds = Double(seconds)
-        self.onFinishedInteraction = onFinishedInteraction
-        self.onRestartPublisher = onRestartPublisher
+        self.progress = progress
         self.colorScheme = colorScheme
     }
     
@@ -40,37 +27,25 @@ public struct TimerView: View {
             .overlay {
                 GeometryReader { proxy in
                     (colorScheme == .dark ? Color.white : Color.black)
-                        .frame(maxWidth: proxy.size.width * fraction)
+                        .frame(maxWidth: proxy.size.width * progress)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
             .cornerRadius(6)
-            .onReceive(timer) { _ in
-                if self.secondsRemaining > 0 {
-                    withAnimation(.linear(duration: 1)) {
-                        self.secondsRemaining -= 1
-                    }
-                } else {
-                    self.timer.upstream.connect().cancel()
-                    self.onFinishedInteraction()
-                }
-            }
-            .onReceive(onRestartPublisher) { _ in
-                self.secondsRemaining = Double(seconds)
-                self.timer = Timer.publish(every: 1, on: .current, in: .common).autoconnect()
-            }
-            .onAppear {
-                secondsRemaining = seconds
-            }
+            .onChange(of: progress, perform: { newValue in
+                
+            })
     }
     
     
 }
 
-struct TimerView_Previews: PreviewProvider {
+struct InLineProgressView_Previews: PreviewProvider {
     static var previews: some View {
-        TimerView(seconds: 10, onRestartPublisher: PassthroughSubject<Void, Never>(), onFinishedInteraction: {}, colorScheme: .light)
+        InLineProgressView(progress: 1, colorScheme: .light)
     }
 }
+
+
 
 
